@@ -3,32 +3,31 @@ terraform {
   required_providers {
     alicloud = {
       source  = "aliyun/alicloud"
-      version = "~> 1.118.0"  # 使用稳定的旧版本，避免参数不兼容
+      version = "~> 1.240.0"  # 使用最新稳定版
     }
   }
 }
 
 provider "alicloud" {
   region = "cn-hangzhou"
-  # 环境变量 ALICLOUD_ACCESS_KEY 和 ALICLOUD_SECRET_KEY 会自动读取
 }
 
 resource "alicloud_vpc" "main" {
-  name       = "my-vpc"
+  vpc_name   = "my-vpc"       # 新版用 vpc_name
   cidr_block = "192.168.0.0/16"
 }
 
 resource "alicloud_vswitch" "main" {
-  vpc_id            = alicloud_vpc.main.id
-  cidr_block        = "192.168.1.0/24"
-  availability_zone = "cn-hangzhou-b"
-  name              = "my-vswitch"
+  vpc_id       = alicloud_vpc.main. id
+  cidr_block   = "192.168.1.0/24"
+  zone_id      = "cn-hangzhou-b"  # 新版用 zone_id
+  vswitch_name = "my-vswitch"      # 新版用 vswitch_name
 }
 
 resource "alicloud_security_group" "main" {
-  name        = "my-security-group"
-  vpc_id      = alicloud_vpc.main.id
-  description = "Security group for ECS instance"
+  security_group_name = "my-security-group"  # 新版用 security_group_name
+  vpc_id              = alicloud_vpc.main.id
+  description         = "Security group for ECS instance"
 }
 
 resource "alicloud_security_group_rule" "allow_ssh" {
@@ -43,13 +42,12 @@ resource "alicloud_security_group_rule" "allow_ssh" {
 resource "alicloud_instance" "main" {
   instance_name              = "my-ecs-instance"
   instance_type              = "ecs.t5-lc2m1.nano"
-  vswitch_id                 = alicloud_vswitch.main.id
-  security_groups            = [alicloud_security_group.main.id]
+  vswitch_id                 = alicloud_vswitch.main. id
+  security_groups            = [alicloud_security_group. main.id]
   image_id                   = "ubuntu_20_04_x64_20G_alibase_20230618.vhd"
   internet_max_bandwidth_out = 10
   password                   = "YourPassword123!"
 }
 
 output "instance_public_ip" {
-  value = alicloud_instance.main. public_ip
-}
+  value = alicloud_instance.main.public_ip
