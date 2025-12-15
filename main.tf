@@ -51,3 +51,4 @@ resource "alicloud_instance" "main" {
 
 output "instance_public_ip" {
   value = alicloud_instance.main.public_ip
+}
