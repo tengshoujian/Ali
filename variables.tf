@@ -25,7 +25,7 @@ variable "instance_name" {
 
 variable "password" {
   type    = string
-  default = "Test@12345"
+  default = "Test@123456"
 }
 
 variable "ecs_count" {
