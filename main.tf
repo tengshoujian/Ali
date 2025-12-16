@@ -1,38 +1,3 @@
-terraform {
-  required_version = ">= 1.0"
-  
-  required_providers {
-    # 如果使用阿里云
-    alicloud = {
-      source  = "aliyun/alicloud"
-      version = "~> 1.219"
-    }
-    
-    # 如果使用AWS
-    # aws = {
-    #   source  = "hashicorp/aws"
-    #   version = "~> 5.0"
-    # }
-    
-    # 用于生成随机密码
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.5"
-    }
-    
-    # 用于读取本地文件
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.4"
-    }
-    
-    # 用于执行远程脚本
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-  }
-}
 
 # 配置阿里云 Provider
 provider "alicloud" {
