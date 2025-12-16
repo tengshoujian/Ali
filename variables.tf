@@ -1,6 +1,6 @@
 
 variable "region" {
-  default = "cn-chengdu"
+  default = "cn-hangzhou"
 }
 
 # 实例配置变量
