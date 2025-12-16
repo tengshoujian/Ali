@@ -83,7 +83,7 @@ resource "null_resource" "upload_setup_script" {
     type        = "ssh"
     host        = alicloud_instance.server.public_ip
     user        = "root"
-    password = file(var.password)
+    password =  var.password
     timeout     = "5m"
   }
   
