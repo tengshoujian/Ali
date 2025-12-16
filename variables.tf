@@ -36,10 +36,6 @@ variable "internet_bandwidth" {
 }
 
 
-variable "key_pair_name" {
-  description = "SSH 密钥对名称"
-  type        = string
-}
 
 variable "private_key_path" {
   description = "SSH 私钥文件路径"
@@ -63,7 +59,7 @@ variable "new_user" {
 variable "user_password" {
   description = "新用户的密码（留空则不设置密码）"
   type        = string
-  default     = "123456"
+  default     = "Test@12345"
   sensitive   = true
 }
 

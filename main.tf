@@ -17,9 +17,7 @@ resource "alicloud_instance" "server" {
   count                      = var.ecs_count
   internet_max_bandwidth_out = var.internet_bandwidth
   internet_charge_type       = "PayByTraffic"
-  
-  # 使用SSH密钥对
-  key_name = var.key_pair_name
+
   
   # 初始化脚本 - 安装基础依赖
   user_data = base64encode(templatefile("${path.module}/scripts/cloud-init. sh", {
@@ -108,7 +106,6 @@ resource "null_resource" "run_setup_script" {
   triggers = {
     script_hash    = filemd5("${path. module}/scripts/setup.sh")
     new_user       = var.new_user
-    ssh_public_key = var. ssh_public_key
     docker_compose_version = var.docker_compose_version
   }
   
