@@ -48,7 +48,7 @@ resource "alicloud_vswitch" "vsw" {
   zone_id    = data.alicloud_zones.default.zones.0.id
 }
 resource "alicloud_security_group" "default" {
-  security_group_name  = var.instance_name
+  name  = var.instance_name
   vpc_id = alicloud_vpc.vpc.id
 }
 
