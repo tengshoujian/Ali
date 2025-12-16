@@ -95,7 +95,7 @@ resource "null_resource" "upload_setup_script" {
   
   # 上传 daemon.json 配置文件
   provisioner "file" {
-    content = templatefile("${path.module}/configs/daemon.json. tpl", {
+    content = templatefile("${path.module}/configs/daemon.json", {
       data_root       = var.docker_data_root
       registry_mirrors = jsonencode(var.docker_registry_mirrors)
     })
