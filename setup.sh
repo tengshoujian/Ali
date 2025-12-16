@@ -224,32 +224,39 @@ fi
 
 print_info "Installing Docker Compose..."
 
+# Fallback version if API call fails
+FALLBACK_COMPOSE_VERSION="v2.29.0"
+
 # Check if docker-compose is already installed
 if command -v docker-compose &>/dev/null; then
     print_warning "Docker Compose is already installed ($(docker-compose --version))"
 else
     # Get latest version of Docker Compose
-    DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
+    DOCKER_COMPOSE_VERSION=$(curl -fsSL https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' || true)
     
     if [ -z "$DOCKER_COMPOSE_VERSION" ]; then
-        print_warning "Could not determine latest Docker Compose version, using v2.24.0"
-        DOCKER_COMPOSE_VERSION="v2.24.0"
+        print_warning "Could not determine latest Docker Compose version, using $FALLBACK_COMPOSE_VERSION"
+        DOCKER_COMPOSE_VERSION="$FALLBACK_COMPOSE_VERSION"
     fi
     
     print_info "Installing Docker Compose $DOCKER_COMPOSE_VERSION..."
     
     # Download Docker Compose
-    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    
-    # Make it executable
-    chmod +x /usr/local/bin/docker-compose
-    
-    # Create symbolic link if needed
-    if [ ! -f /usr/bin/docker-compose ]; then
-        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
+    if curl -fsSL "$COMPOSE_URL" -o /usr/local/bin/docker-compose; then
+        # Make it executable
+        chmod +x /usr/local/bin/docker-compose
+        
+        # Create symbolic link if needed
+        if [ ! -f /usr/bin/docker-compose ]; then
+            ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+        fi
+        
+        print_info "Docker Compose installed successfully"
+    else
+        print_error "Failed to download Docker Compose from $COMPOSE_URL"
+        exit 1
     fi
-    
-    print_info "Docker Compose installed successfully"
 fi
 
 ###############################################################################
