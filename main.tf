@@ -4,6 +4,12 @@ provider "alicloud" {
   region     = var. region
 }
 
+data "alicloud_zones" "default" {
+  available_disk_category     = "cloud_essd"
+  available_resource_creation = "VSwitch"
+  available_instance_type     = var.instance_type
+}
+
 # 创建 ECS 实例（示例）
 resource "alicloud_instance" "server" {
   instance_name        = var.instance_name
