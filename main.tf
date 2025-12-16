@@ -89,7 +89,7 @@ resource "null_resource" "upload_setup_script" {
   
   # 上传脚本文件
   provisioner "file" {
-    source      = "${path.module}/scripts/setup. sh"
+    source      = "${path.module}/scripts/setup.sh"
     destination = "/tmp/setup.sh"
   }
   
