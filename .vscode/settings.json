@@ -1,0 +1,31 @@
+{
+  "// ===== Terraform 配置 =====": "",
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor. formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnPaste": true
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
+  },
+  "// ===== Terraform 语言服务器 =====": "",
+  "terraform.languageServer.enable": true,
+  "terraform.experimentalFeatures.validateOnSave": true,
+  "terraform.experimentalFeatures.prefillRequiredFields": true,
+  "// ===== 文件关联 =====": "",
+  "files.associations": {
+    "*.tf": "terraform",
+    "*.tfvars": "terraform-vars",
+    "*.hcl": "terraform"
+  },
+  "// ===== 编辑器基础设置 =====": "",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "// ===== 其他 =====": "",
+  "files.exclude": {
+    "**/.terraform": true
+  }
+}

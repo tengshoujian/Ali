@@ -48,14 +48,14 @@ resource "alicloud_vswitch" "vsw" {
   zone_id    = data.alicloud_zones.default.zones.0.id
 }
 resource "alicloud_security_group" "default" {
-  name   = var.instance_name
+  security_group_name  = var.instance_name
   vpc_id = alicloud_vpc.vpc.id
 }
 
 resource "alicloud_security_group_rule" "allow_tcp_22" {
   type              = "ingress"
   ip_protocol       = "tcp"
-  nic_type          = "intranet"
+  nic_type          = "internet"
   policy            = "accept"
   port_range        = "22/22"
   priority          = 1
@@ -67,7 +67,7 @@ resource "alicloud_security_group_rule" "allow_tcp_22" {
 resource "time_sleep" "wait_for_instance" {
   depends_on = [alicloud_instance.server]
   
-  create_duration = "30s"
+  create_duration = "10s"
 }
 
 # 上传 setup.sh 脚本到服务器
@@ -118,7 +118,7 @@ resource "null_resource" "run_setup_script" {
     type        = "ssh"
     host        = alicloud_instance.server.public_ip
     user        = "root"
-    private_key = file(var.private_key_path)
+    password =  var.password
     timeout     = "10m"
   }
   
@@ -160,7 +160,7 @@ resource "null_resource" "configure_firewall" {
     type        = "ssh"
     host        = alicloud_instance.server.public_ip
     user        = "root"
-    private_key = file(var.private_key_path)
+    password =  var.password
   }
   
   provisioner "remote-exec" {
@@ -185,3 +185,4 @@ resource "time_sleep" "wait_for_setup" {
   
   create_duration = "10s"
 }
+
