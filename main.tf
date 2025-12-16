@@ -20,7 +20,6 @@ resource "alicloud_instance" "server" {
   vswitch_id           = alicloud_vswitch.vsw.id
   security_groups      = alicloud_security_group.default.*.id
   password             = var.password
-  count                      = var.ecs_count
   internet_max_bandwidth_out = var.internet_bandwidth
   internet_charge_type       = "PayByTraffic"
 
