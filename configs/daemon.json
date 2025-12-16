@@ -1,0 +1,21 @@
+{
+    "data-root": "${data_root}",
+    "registry-mirrors": ${registry_mirrors},
+    "log-driver":  "json-file",
+    "log-opts": {
+      "max-size": "100m",
+      "max-file": "3"
+    },
+    "storage-driver": "overlay2",
+    "live-restore": true,
+    "userland-proxy": false,
+    "max-concurrent-downloads": 10,
+    "max-concurrent-uploads": 5,
+    "default-ulimits": {
+      "nofile": {
+        "Name": "nofile",
+        "Hard": 64000,
+        "Soft": 64000
+      }
+    }
+  }

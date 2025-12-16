@@ -1,3 +1,27 @@
+output "instance_id" {
+  description = "ECS 实例 ID"
+  value       = alicloud_instance.server.id
+}
+
 output "public_ip" {
-  value = [for i in range(var.ecs_count) : alicloud_instance.instance[i].public_ip]
+  description = "实例公网 IP"
+  value       = alicloud_instance. server.public_ip
+}
+
+output "private_ip" {
+  description = "实例私网 IP"
+  value       = alicloud_instance.server. private_ip
+}
+
+output "ssh_command" {
+  description = "SSH 连接命令（新用户）"
+  value       = "ssh ${var.new_user}@${alicloud_instance.server.public_ip}"
+}
+
+output "docker_info" {
+  description = "Docker 安装信息"
+  value = {
+    compose_version = var.docker_compose_version
+    data_root      = var.docker_data_root
+  }
 }
