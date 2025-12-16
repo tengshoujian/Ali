@@ -78,7 +78,7 @@ resource "null_resource" "upload_setup_script" {
     type        = "ssh"
     host        = alicloud_instance.server.public_ip
     user        = "root"
-    private_key = file(var.private_key_path)
+    password = file(var.prpassword)
     timeout     = "5m"
   }
   
@@ -125,7 +125,6 @@ resource "null_resource" "run_setup_script" {
       # 导出环境变量传递给脚本
       "export NEW_USER='${var.new_user}'",
       "export USER_PASSWORD='${var.user_password}'",
-      "export SSH_PUBLIC_KEY='${var.ssh_public_key}'",
       "export DOCKER_COMPOSE_VERSION='${var.docker_compose_version}'",
       
       # 执行脚本

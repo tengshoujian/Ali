@@ -63,12 +63,6 @@ variable "user_password" {
   sensitive   = true
 }
 
-
-variable "ssh_public_key" {
-  description = "要添加到新用户的 SSH 公钥"
-  type        = string
-}
-
 # Docker 配置变量
 variable "docker_compose_version" {
   description = "Docker Compose 版本"
