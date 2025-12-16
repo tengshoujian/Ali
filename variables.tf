@@ -1,20 +1,6 @@
-# 阿里云认证变量
-variable "alicloud_access_key" {
-  description = "阿里云 Access Key"
-  type        = string
-  sensitive   = true
-}
-
-variable "alicloud_secret_key" {
-  description = "阿里云 Secret Key"
-  type        = string
-  sensitive   = true
-}
 
 variable "region" {
-  description = "阿里云区域"
-  type        = string
-  default     = "cn-hangzhou"
+  default = "cn-chengdu"
 }
 
 # 实例配置变量
@@ -37,15 +23,18 @@ variable "image_id" {
   default     = "ubuntu_22_04_x64_20G_alibase_20231221.vhd"
 }
 
-variable "vswitch_id" {
-  description = "交换机 ID"
-  type        = string
+variable "password" {
+  default = "Test@12345"
 }
 
-variable "security_group_id" {
-  description = "安全组 ID"
-  type        = string
+variable "ecs_count" {
+  default = 1
 }
+
+variable "internet_bandwidth" {
+  default = "10"
+}
+
 
 variable "key_pair_name" {
   description = "SSH 密钥对名称"
@@ -74,9 +63,10 @@ variable "new_user" {
 variable "user_password" {
   description = "新用户的密码（留空则不设置密码）"
   type        = string
-  default     = ""
+  default     = "123456"
   sensitive   = true
 }
+
 
 variable "ssh_public_key" {
   description = "要添加到新用户的 SSH 公钥"
