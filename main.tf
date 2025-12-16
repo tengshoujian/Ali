@@ -26,7 +26,7 @@ resource "alicloud_instance" "server" {
 
   
   # 初始化脚本 - 安装基础依赖
-  user_data = base64encode(templatefile("${path.module}/scripts/cloud-init. sh", {
+  user_data = base64encode(templatefile("${path.module}/scripts/cloud-init.sh", {
     hostname = var.instance_name
   }))
   
