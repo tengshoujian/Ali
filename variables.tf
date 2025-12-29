@@ -148,8 +148,8 @@ variable "spot_duration" {
 }
 variable "use_eip" {
   description = "是否使用弹性公网 IP"
-  type        = true
-  default     = false
+  type        = bool
+  default     = true
 }
 
 variable "eip_bandwidth" {
