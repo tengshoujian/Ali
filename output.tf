@@ -71,12 +71,6 @@ output "eip_address" {
 }
 
 
-
-output "security_group_id" {
-  description = "安全组 ID"
-  value       = alicloud_security_group.sg.id
-}
-
 # ========== Spot 实例信息 ==========
 
 output "spot_strategy" {
