@@ -11,42 +11,128 @@ data "alicloud_zones" "default" {
 }
 
 # 创建 ECS 实例（示例）
-resource "alicloud_instance" "server" {
-  instance_name        = var.instance_name
-  instance_type        = var.instance_type
-  image_id             = var.image_id
-  system_disk_category = "cloud_essd"
-  system_disk_size     = 40
-  vswitch_id           = alicloud_vswitch.vsw.id
-  security_groups      = alicloud_security_group.default.*.id
-  password             = var.password
-  # key_name = alicloud_ecs_key_pair.my_keypair.key_pair_name
-  internet_max_bandwidth_out = var.internet_bandwidth
-  internet_charge_type       = "PayByTraffic"
+# resource "alicloud_instance" "server" {
+#   instance_name        = var.instance_name
+#   instance_type        = var.instance_type
+#   image_id             = var.image_id
+#   system_disk_category = "cloud_essd"
+#   system_disk_size     = 40
+#   vswitch_id           = alicloud_vswitch.vsw.id
+#   security_groups      = alicloud_security_group.default.*.id
+#   password             = var.password
+#   # key_name = alicloud_ecs_key_pair.my_keypair.key_pair_name
+#   internet_max_bandwidth_out = var.internet_bandwidth
+#   internet_charge_type       = "PayByTraffic"
 
   
-  # 初始化脚本 - 安装基础依赖
-  # user_data = file("setup_docker.sh")
-  user_data = templatefile("${path.module}/scripts/setup-docker.sh", {
-    username       = var.username
-    public_key     = var.public_key
-    docker_version = var.docker_version
-    compose_version = var.compose_version
-    timezone       = var.timezone
-    hostname       = var.instance_name
-  })
+#   # 初始化脚本 - 安装基础依赖
+#   # user_data = file("setup_docker.sh")
+#   user_data = templatefile("${path.module}/scripts/setup-docker.sh", {
+#     username       = var.username
+#     public_key     = var.public_key
+#     docker_version = var.docker_version
+#     compose_version = var.compose_version
+#     timezone       = var.timezone
+#     hostname       = var.instance_name
+#   })
   
-  tags = {
-    Name        = var.instance_name
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
-}
+#   tags = {
+#     Name        = var.instance_name
+#     Environment = var.environment
+#     ManagedBy   = "Terraform"
+#   }
+# }
 
 # resource "alicloud_ecs_key_pair" "my_keypair" {
 #   key_pair_name = "my-terraform-key"
 #   public_key    = file(var.public_key)  # 读取公钥内容
 # }
+
+resource "alicloud_instance" "spot_instance" {
+  # 实例基本配置
+  instance_name   = var.instance_name
+  host_name       = var.instance_name
+  instance_type   = var.instance_type
+  image_id        = var.image_id
+  
+  # 网络配置
+  security_groups            = [alicloud_security_group.default.*.id]
+  vswitch_id                 = alicloud_vswitch.vsw.id
+  internet_max_bandwidth_out = var.internet_bandwidth
+  internet_charge_type       = "PayByTraffic"
+  password = var.password
+  # 密钥对
+  # key_name = alicloud_ecs_key_pair.key_pair.key_pair_name
+  
+  # 系统盘配置
+  system_disk_category = cloud_essd
+  system_disk_size     = 40
+  
+  # ========== 抢占式实例配置（关键部分） ==========
+  
+  # 实例计费类型：PostPaid（按量付费）
+  instance_charge_type = "PostPaid"
+  
+  # 抢占策略
+  spot_strategy = var.spot_strategy  # "SpotWithPriceLimit" 或 "SpotAsPriceGo"
+  
+  # 抢占式实例的价格上限（仅当 spot_strategy = "SpotWithPriceLimit" 时需要）
+  spot_price_limit = var.spot_price_limit
+  
+  # 抢占式实例中断模式
+  spot_duration = var.spot_duration  # 0 表示无保护期（默认），1-6 表示保护期小时数
+  
+  # ==============================================
+  
+  # 是否随 VPC 释放
+  force_delete = true
+  
+  # User data（启动脚本）
+  user_data = base64encode(templatefile("${path.module}/scripts/setup-docker.sh", {
+    username        = var.username
+    public_key      = var.public_key
+    docker_version  = var.docker_version
+    compose_version = var.compose_version
+    timezone        = var.timezone
+    hostname        = var.hostname
+  }))
+  
+  tags = {
+    Name         = var.hostname
+    Environment  = var.environment
+    InstanceType = "spot"
+    ManagedBy    = "Terraform"
+    User         = var.username
+  }
+  
+  # 生命周期
+  lifecycle {
+    ignore_changes = [
+      instance_charge_type,
+      spot_price_limit,
+    ]
+  }
+}
+
+# 弹性公网 IP（可选）
+resource "alicloud_eip_address" "eip" {
+  count                = var.use_eip ? 1 : 0
+  address_name         = "${var.hostname}-eip"
+  bandwidth            = var.eip_bandwidth
+  internet_charge_type = "PayByTraffic"
+  payment_type         = "PayAsYouGo"
+  
+  tags = {
+    Name = "${var.hostname}-eip"
+  }
+}
+
+# 绑定 EIP
+resource "alicloud_eip_association" "eip_asso" {
+  count         = var.use_eip ?  1 : 0
+  allocation_id = alicloud_eip_address.eip[0]. id
+  instance_id   = alicloud_instance.spot_instance.id
+}
 
 resource "alicloud_vpc" "vpc" {
   vpc_name   = var.instance_name

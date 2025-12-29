@@ -112,3 +112,48 @@ variable "docker_registry_mirrors" {
     "https://hub-mirror.c.163.com"
   ]
 }
+
+variable "spot_strategy" {
+  description = "抢占式实例策略"
+  type        = string
+  default     = "SpotAsPriceGo"
+  # SpotWithPriceLimit:  设置价格上限
+  # SpotAsPriceGo: 系统自动出价，最高按量付费价格
+  
+  validation {
+    condition     = contains(["SpotWithPriceLimit", "SpotAsPriceGo"], var.spot_strategy)
+    error_message = "spot_strategy 必须是 'SpotWithPriceLimit' 或 'SpotAsPriceGo'"
+  }
+}
+
+variable "spot_price_limit" {
+  description = "抢占式实例价格上限（每小时）"
+  type        = number
+  default     = 0.5
+  # 仅当 spot_strategy = "SpotWithPriceLimit" 时生效
+  # 建议设置为按量付费价格的 10%-30%
+}
+
+variable "spot_duration" {
+  description = "抢占式实例保护期（小时）"
+  type        = number
+  default     = 0
+  # 0:  无保护期（推荐，价格最低）
+  # 1-6: 保护期 1-6 小时（保护期内不会被回收）
+  
+  validation {
+    condition     = var.spot_duration >= 0 && var.spot_duration <= 6
+    error_message = "spot_duration 必须在 0-6 之间"
+  }
+}
+variable "use_eip" {
+  description = "是否使用弹性公网 IP"
+  type        = true
+  default     = false
+}
+
+variable "eip_bandwidth" {
+  description = "EIP 带宽 (Mbps)"
+  type        = number
+  default     = 10
+}
