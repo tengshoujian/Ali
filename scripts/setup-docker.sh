@@ -243,23 +243,40 @@ echo "✓ Docker 镜像加速配置完成"
 
 echo "[6/8] 安装 Docker Compose..."
 
-# 使用国内镜像加速下载
-COMPOSE_URL="https://ghproxy.com/https://github.com/docker/compose/releases/download/v$COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)"
+# 方式 1: 使用 APT 安装插件版本（最可靠）
+echo "通过 APT 安装 Docker Compose 插件..."
+apt-get install -y docker-compose-plugin
 
-echo "下载地址: $COMPOSE_URL"
-
-# 尝试使用代理下载
-if curl -L "$COMPOSE_URL" -o /usr/local/bin/docker-compose --connect-timeout 10; then
-    echo "✓ 使用代理下载成功"
+# 验证插件安装
+if docker compose version &>/dev/null; then
+    echo "✓ Docker Compose 插件安装成功"
+    COMPOSE_PLUGIN_VERSION=$(docker compose version --short)
+    echo "  版本: $COMPOSE_PLUGIN_VERSION"
+    
+    # 创建兼容性符号链接
+    cat > /usr/local/bin/docker-compose <<'WRAPPER'
+#!/bin/bash
+exec docker compose "$@"
+WRAPPER
+    chmod +x /usr/local/bin/docker-compose
+    ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+    
+    echo "✓ 已创建 docker-compose 兼容命令"
 else
-    echo "⚠ 代理下载失败，尝试直接下载..."
-    curl -L "https://github.com/docker/compose/releases/download/v$COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    echo "⚠️ 插件安装失败，尝试安装独立版本..."
+    
+    # 方式 2: 从 APT 安装独立版本
+    apt-get install -y docker-compose
+    
+    if docker-compose version &>/dev/null; then
+        echo "✓ Docker Compose 独立版安装成功"
+        docker-compose version
+    else
+        echo "❌ Docker Compose 安装失败"
+    fi
 fi
 
-chmod +x /usr/local/bin/docker-compose
-ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-
-echo "✓ Docker Compose 安装完成:  $(docker-compose --version)"
+echo "✓ Docker Compose 安装完成"
 
 ###############################################################################
 # 7. 配置用户和 Docker 组

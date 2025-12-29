@@ -37,7 +37,6 @@ variable "internet_bandwidth" {
 
 variable "public_key" {
   description = "ssh public key"
-  default = "id_rsa.pub"
   type = string 
 }
 
