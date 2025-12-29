@@ -35,6 +35,11 @@ variable "internet_bandwidth" {
   default = "10"
 }
 
+variable "public_key" {
+  description = "ssh public key"
+  default = "id_rsa.pub"
+  type = string 
+}
 
 
 variable "private_key_path" {
@@ -50,12 +55,35 @@ variable "environment" {
 }
 
 # 用户配置变量
-variable "new_user" {
+variable "username" {
   description = "要创建的新用户名"
   type        = string
-  default     = "deployuser"
+  default     = "prod-user"
 }
 
+variable "timezone" {
+  description = "系统时区"
+  type        = string
+  default     = "Asia/Shanghai"
+}
+
+variable "hostname" {
+  description = "主机名"
+  type        = string
+  default     = "prod-docker-server"
+}
+
+variable "docker_version" {
+  description = "Docker 版本"
+  type        = string
+  default     = "latest"  # 或指定版本如 "24.0"
+}
+
+variable "compose_version" {
+  description = "Docker Compose 版本"
+  type        = string
+  default     = "2.24.0"  # 使用最新稳定版
+}
 variable "user_password" {
   description = "新用户的密码（留空则不设置密码）"
   type        = string

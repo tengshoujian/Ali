@@ -20,12 +20,21 @@ resource "alicloud_instance" "server" {
   vswitch_id           = alicloud_vswitch.vsw.id
   security_groups      = alicloud_security_group.default.*.id
   password             = var.password
+  # key_name = alicloud_ecs_key_pair.my_keypair.key_pair_name
   internet_max_bandwidth_out = var.internet_bandwidth
   internet_charge_type       = "PayByTraffic"
 
   
   # 初始化脚本 - 安装基础依赖
-  user_data = file("setup_docker.sh")
+  # user_data = file("setup_docker.sh")
+  user_data = templatefile("${path.module}/scripts/setup-docker.sh", {
+    username       = var.username
+    public_key     = var.public_key
+    docker_version = var.docker_version
+    compose_version = var.compose_version
+    timezone       = var.timezone
+    hostname       = var.instance_name
+  })
   
   tags = {
     Name        = var.instance_name
@@ -34,6 +43,10 @@ resource "alicloud_instance" "server" {
   }
 }
 
+# resource "alicloud_ecs_key_pair" "my_keypair" {
+#   key_pair_name = "my-terraform-key"
+#   public_key    = file(var.public_key)  # 读取公钥内容
+# }
 
 resource "alicloud_vpc" "vpc" {
   vpc_name   = var.instance_name
