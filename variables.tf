@@ -38,6 +38,7 @@ variable "internet_bandwidth" {
 variable "public_key" {
   description = "ssh public key"
   type = string 
+  default     = "" 
 }
 
 variable "public_key_path" {
