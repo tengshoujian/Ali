@@ -208,7 +208,7 @@ mkdir -p /etc/docker
 cat > /etc/docker/daemon.json <<'DOCKERCONFIG'
 {
   "registry-mirrors": [
-    "https://docker.mirrors.ustc.edu. cn",
+    "https://docker.mirrors.ustc.edu.cn",
     "https://hub-mirror.c.163.com"
   ],
   "log-driver": "json-file",

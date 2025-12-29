@@ -85,14 +85,12 @@ resource "alicloud_instance" "spot_instance" {
   spot_duration = var.spot_duration  # 0 表示无保护期（默认），1-6 表示保护期小时数
   
   # ==============================================
-  
-  # 是否随 VPC 释放
-  force_delete = true
+ 
   
   # User data（启动脚本）
   user_data = base64encode(templatefile("${path.module}/scripts/setup-docker.sh", {
     username        = var.username
-    public_key      = var.public_key
+    public_key      = local.ssh_public_key
     docker_version  = var.docker_version
     compose_version = var.compose_version
     timezone        = var.timezone
@@ -116,6 +114,12 @@ resource "alicloud_instance" "spot_instance" {
   }
 }
 
+ locals {
+  # 读取 SSH 公钥（从内容或文件）
+  ssh_public_key = var.public_key != "" ? var.public_key :  trimspace(file(var.public_key_path))
+  # 是否随 VPC 释放
+  force_delete = true
+  }
 # 弹性公网 IP（可选）
 resource "alicloud_eip_address" "eip" {
   count                = var.use_eip ? 1 : 0
