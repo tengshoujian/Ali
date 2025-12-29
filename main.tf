@@ -56,7 +56,7 @@ resource "alicloud_instance" "spot_instance" {
   image_id        = var.image_id
   
   # 网络配置
-  security_groups            = [alicloud_security_group.default.*.id]
+  security_groups            = alicloud_security_group.default.*.id
   vswitch_id                 = alicloud_vswitch.vsw.id
   internet_max_bandwidth_out = var.internet_bandwidth
   internet_charge_type       = "PayByTraffic"
