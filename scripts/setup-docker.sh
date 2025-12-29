@@ -93,14 +93,14 @@ usermod -aG sudo "$USERNAME"
 
 # 配置无密码 sudo
 echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers. d/$USERNAME
-chmod 440 /etc/sudoers. d/$USERNAME
+chmod 440 /etc/sudoers.d/$USERNAME
 
 # 配置 SSH
-mkdir -p /home/$USERNAME/. ssh
-chmod 700 /home/$USERNAME/. ssh
+mkdir -p /home/$USERNAME/.ssh
+chmod 700 /home/$USERNAME/.ssh
 
 echo "$PUBLIC_KEY" > /home/$USERNAME/.ssh/authorized_keys
-chmod 600 /home/$USERNAME/. ssh/authorized_keys
+chmod 600 /home/$USERNAME/.ssh/authorized_keys
 chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
 
 echo "✓ 用户配置完成"
