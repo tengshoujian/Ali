@@ -58,8 +58,10 @@ resource "alicloud_instance" "spot_instance" {
   # 网络配置
   security_groups            = alicloud_security_group.default.*.id
   vswitch_id                 = alicloud_vswitch.vsw.id
-  internet_max_bandwidth_out = var.internet_bandwidth
-  internet_charge_type       = "PayByTraffic"
+  internet_max_bandwidth_out = var.use_eip ? 0 :  var.internet_bandwidth
+  internet_charge_type       = var.use_eip ? null : "PayByTraffic"
+  # internet_max_bandwidth_out = var.internet_bandwidth
+  # internet_charge_type       = "PayByTraffic"
   password = var.password
   # 密钥对
   # key_name = alicloud_ecs_key_pair.key_pair.key_pair_name
