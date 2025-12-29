@@ -152,9 +152,7 @@ output "cost_estimate" {
     instance_type   = var.instance_type
     spot_strategy   = var.spot_strategy
     estimated_savings = "相比按量付费节省 70-90%"
-    bandwidth_cost  = var.use_eip 
-      "EIP 带宽:  ${var.eip_bandwidth}Mbps 按流量计费" : 
-      "实例带宽:  ${var.internet_max_bandwidth_out}Mbps 按流量计费"
+    
   }
 }
 
