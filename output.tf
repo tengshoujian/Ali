@@ -1,16 +1,16 @@
 output "instance_id" {
   description = "ECS 实例 ID"
-  value       = alicloud_instance.server.id
+  value       = alicloud_instance.spot_instance.id
 }
 
 output "public_ip" {
   description = "实例公网 IP"
-  value       = alicloud_instance. server.public_ip
+  value       = alicloud_instance.spot_instance.public_ip
 }
 
 output "private_ip" {
   description = "实例私网 IP"
-  value       = alicloud_instance.server. private_ip
+  value       = alicloud_instance.spot_instance.private_ip
 }
 
 output "ssh_command" {

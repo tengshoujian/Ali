@@ -65,7 +65,7 @@ resource "alicloud_instance" "spot_instance" {
   # key_name = alicloud_ecs_key_pair.key_pair.key_pair_name
   
   # 系统盘配置
-  system_disk_category = cloud_essd
+  system_disk_category = "cloud_essd"
   system_disk_size     = 40
   
   # ========== 抢占式实例配置（关键部分） ==========
