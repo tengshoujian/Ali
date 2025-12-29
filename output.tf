@@ -15,7 +15,7 @@ output "private_ip" {
 
 output "ssh_command" {
   description = "SSH 连接命令（新用户）"
-  value       = "ssh ${var.username}@${alicloud_instance.server.public_ip}"
+  value       = "ssh ${var.username}@${alicloud_instance.spot_instance.public_ip}"
 }
 
 output "docker_info" {
