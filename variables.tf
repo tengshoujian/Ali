@@ -44,7 +44,7 @@ variable "public_key" {
 variable "public_key_path" {
   description = "SSH 公钥文件路径（如果 public_key 变量为空，则从该路径读取公钥内容）"
   type        = string
-  default     = "${path.module}/id_rsa.pub" 
+  default     = "./id_rsa.pub" 
 }
 variable "private_key_path" {
   description = "SSH 私钥文件路径"
