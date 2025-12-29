@@ -306,6 +306,7 @@ echo "[8/8] 创建工作目录..."
 # 创建目录
 mkdir -p /home/$USERNAME/projects
 mkdir -p /home/$USERNAME/docker
+mkdir -p /home/$USERNAME/docker/html  # ✅ 确保目录存在
 
 # 创建示例 compose 文件
 cat > /home/$USERNAME/docker/docker-compose.example.yml <<'COMPOSE'
@@ -318,7 +319,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./html:/usr/share/nginx/html: ro
+      - ./html:/usr/share/nginx/html:ro
     restart: unless-stopped
     
   whoami:
@@ -329,9 +330,13 @@ services:
     restart: unless-stopped
 COMPOSE
 
-# 创建示例网页
-mkdir -p /home/$USERNAME/docker/html
-cat > /home/$USERNAME/docker/html/index. html <<HTML
+# ✅ 修复：先获取实例信息，然后创建 HTML
+INSTANCE_ID=$(curl -s http://100.100.100.200/latest/meta-data/instance-id 2>/dev/null || echo "unknown")
+PUBLIC_IP=$(curl -s http://100.100.100.200/latest/meta-data/eipv4 2>/dev/null || curl -s http://100.100.100.200/latest/meta-data/public-ipv4 2>/dev/null || echo "N/A")
+CURRENT_TIME=$(date)
+
+# 创建示例网页（使用变量替换，不使用命令替换）
+cat > /home/$USERNAME/docker/html/index.html <<EOF
 <!DOCTYPE html>
 <html>
 <head>
@@ -345,22 +350,52 @@ cat > /home/$USERNAME/docker/html/index. html <<HTML
             background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        h1 { font-size: 3em; margin-bottom: 20px; }
-        . info {
+        h1 { 
+            font-size: 3em; 
+            margin-bottom: 20px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .info {
             background: rgba(255,255,255,0.1);
             padding: 30px;
-            border-radius:  15px;
+            border-radius: 15px;
             display: inline-block;
             margin-top: 30px;
             text-align: left;
+            backdrop-filter: blur(10px);
         }
-        .info p { margin: 10px 0; font-size: 1.2em; }
+        .info p { 
+            margin: 10px 0; 
+            font-size: 1.2em; 
+        }
         .status { 
             display: inline-block;
             padding: 5px 15px;
             background: #4CAF50;
             border-radius: 20px;
             margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        . link {
+            margin-top: 30px;
+        }
+        .link a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .link a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -368,17 +403,23 @@ cat > /home/$USERNAME/docker/html/index. html <<HTML
     <h1>🐳 阿里云抢占式实例运行中！</h1>
     <div class="info">
         <p><strong>主机名:</strong> $HOSTNAME</p>
-        <p><strong>用户:</strong> $USERNAME</p>
-        <p><strong>时间:</strong> $(date)</p>
-        <p><strong>地域:</strong> 阿里云</p>
+        <p><strong>用户: </strong> $USERNAME</p>
+        <p><strong>实例 ID:</strong> $INSTANCE_ID</p>
+        <p><strong>公网 IP:</strong> $PUBLIC_IP</p>
+        <p><strong>部署时间:</strong> $CURRENT_TIME</p>
         <p><strong>状态:</strong> <span class="status">运行中</span></p>
     </div>
-    <p style="margin-top: 30px;">
-        <a href="/whoami" style="color: white; text-decoration: underline;">访问 Whoami 服务 (端口 8080)</a>
-    </p>
+    <div class="link">
+        <a href="http://$PUBLIC_IP:8080" target="_blank">访问 Whoami 服务 (端口 8080)</a>
+    </div>
+    <div style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+        <p>💡 Docker 容器管理: </p>
+        <p>SSH:  ssh $USERNAME@$PUBLIC_IP</p>
+        <p>命令: cd ~/docker && docker-compose -f docker-compose.example.yml up -d</p>
+    </div>
 </body>
 </html>
-HTML
+EOF
 
 # 创建抢占式实例监控脚本
 cat > /home/$USERNAME/spot-monitor.sh <<'MONITOR'
@@ -391,7 +432,6 @@ echo "$(date): 抢占式实例监控启动" >> "$LOG_FILE"
 
 while true; do
     # 检查实例元数据，查看是否即将释放
-    # 阿里云会提前 5 分钟通知
     METADATA=$(curl -s --connect-timeout 2 http://100.100.100.200/latest/meta-data/instance/spot/termination-time 2>/dev/null)
     
     if [ -n "$METADATA" ] && [ "$METADATA" != "404" ] && [ "$METADATA" != "Not Found" ]; then
@@ -399,7 +439,7 @@ while true; do
         
         # 执行清理操作
         echo "$(date): 开始清理 Docker 容器..." >> "$LOG_FILE"
-        cd /home/${username}/docker 2>/dev/null
+        cd /home/$USERNAME/docker 2>/dev/null
         docker-compose down 2>/dev/null || true
         
         echo "$(date): 清理完成" >> "$LOG_FILE"
@@ -416,7 +456,7 @@ MONITOR
 
 chmod +x /home/$USERNAME/spot-monitor.sh
 
-# 创建 systemd 服务（可选）
+# 创建 systemd 服务
 cat > /etc/systemd/system/spot-monitor.service <<SERVICE
 [Unit]
 Description=Spot Instance Termination Monitor
@@ -433,8 +473,8 @@ RestartSec=10
 WantedBy=multi-user.target
 SERVICE
 
-# 启用服务（可选）
-# systemctl enable spot-monitor. service
+# 可选：启用监控服务
+# systemctl enable spot-monitor.service
 # systemctl start spot-monitor.service
 
 # 创建 README
@@ -446,7 +486,7 @@ cat > /home/$USERNAME/README.md <<'README'
 ```bash
 # 检查 Docker
 docker --version
-docker-compose --version
+docker compose version
 
 # 运行示例
 cd ~/docker
@@ -521,7 +561,7 @@ docker system prune -a -f --volumes
 ├── docker/                      # Docker 配置
 │   ├── docker-compose.example.yml
 │   └── html/
-│       └── index.html
+│       └── index. html
 ├── spot-monitor.sh              # 监控脚本
 └── README.md                    # 本文件
 ```
@@ -531,6 +571,22 @@ docker system prune -a -f --volumes
 - [Docker 官方文档](https://docs.docker.com/)
 - [Docker Hub](https://hub.docker.com/)
 - [阿里云容器镜像服务](https://cr.console.aliyun.com/)
+
+## 🛠️ 故障排查
+
+```bash
+# 查看安装日志
+sudo cat /var/log/setup-docker.log
+
+# 查看 Docker 状态
+sudo systemctl status docker
+
+# 查看容器日志
+docker logs <container_name>
+
+# 重启 Docker
+sudo systemctl restart docker
+```
 README
 
 # 设置权限
@@ -560,7 +616,7 @@ cat << 'WELCOME'
    阿里云抢占式实例 - Docker 环境就绪
    ================================================
    
-   快速命令: 
+   快速命令:  
    • docker --version
    • cd ~/docker && dcup
    • ~/spot-monitor.sh &
@@ -582,54 +638,4 @@ sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_con
 # 重启 SSH 服务
 systemctl restart sshd || systemctl restart ssh
 
-echo "✓ 工作目录创建完成"
-
-###############################################################################
-# 完成
-###############################################################################
-
-# 获取实例信息
-INSTANCE_ID=$(curl -s http://100.100.100.200/latest/meta-data/instance-id 2>/dev/null || echo "N/A")
-PUBLIC_IP=$(curl -s http://100.100.100.200/latest/meta-data/eipv4 2>/dev/null || curl -s http://100.100.100.200/latest/meta-data/public-ipv4 2>/dev/null || echo "N/A")
-REGION=$(curl -s http://100.100.100.200/latest/meta-data/region-id 2>/dev/null || echo "N/A")
-ZONE=$(curl -s http://100.100.100.200/latest/meta-data/zone-id 2>/dev/null || echo "N/A")
-
-echo ""
-echo "=================================================="
-echo "✅ 阿里云抢占式实例初始化完成！"
-echo "=================================================="
-echo ""
-echo "📋 实例信息:"
-echo "   • 实例 ID: $INSTANCE_ID"
-echo "   • 地域: $REGION"
-echo "   • 可用区:  $ZONE"
-echo "   • 主机名: $HOSTNAME"
-echo "   • 用户:  $USERNAME"
-echo "   • 公网 IP: $PUBLIC_IP"
-echo ""
-echo "🐳 已安装:"
-echo "   • Docker: $(docker --version)"
-echo "   • Docker Compose: $(docker-compose --version)"
-echo ""
-echo "🔐 SSH 连接:"
-echo "   ssh $USERNAME@$PUBLIC_IP"
-echo ""
-echo "🌐 Web 访问:"
-echo "   http://$PUBLIC_IP"
-echo ""
-echo "📝 日志:  $LOG_FILE"
-echo "=================================================="
-
-# 测试 Docker（作为用户运行）
-echo ""
-echo "🧪 测试 Docker 安装..."
-if sudo -u $USERNAME docker run --rm hello-world > /dev/null 2>&1; then
-    echo "✅ Docker 测试成功！"
-else
-    echo "⚠️ Docker 测试失败，可能需要重新登录使组权限生效"
-fi
-
-echo ""
-echo "安装完成时间: $(date)"
-
-exit 0
+echo 
