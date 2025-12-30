@@ -1,6 +1,6 @@
 
 variable "region" {
-  default = "cn-hangzhou"
+  default = "ap-southeast-1"
 }
 
 # 实例配置变量
