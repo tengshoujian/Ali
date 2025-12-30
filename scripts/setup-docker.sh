@@ -297,20 +297,3 @@ fi
 
 echo "✓ 用户权限配置完成"
 
-###############################################################################
-# 8. 创建工作目录和示例
-###############################################################################
-
-echo "[8/8] 创建工作目录..."
-
-
-# 配置 SSH 安全
-echo "配置 SSH 安全设置..."
-sed -i 's/^#*PasswordAuthentication. */PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-
-# 重启 SSH 服务
-systemctl restart sshd || systemctl restart ssh
-
-echo 
