@@ -13,7 +13,7 @@ variable "instance_name" {
 variable "instance_type" {
   description = "ECS 实例规格"
   type        = string
-  default     = "ecs.t6-c2m1.large"
+  default     = "ecs.e-c1m4.large"
 }
 
 variable "image_id" {
